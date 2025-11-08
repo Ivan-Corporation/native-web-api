@@ -1,24 +1,38 @@
 import { useEffect, useState } from "react";
 
-type NetworkInformation = {
-  type: string;
-  effectiveType: string;
-  saveData: boolean;
-  downlink: number;
-  rtt: number;
-  rttdelay: number;
-  maxrtt: number;
+export type NetworkInfo = {
+  effectiveType: "slow-2g" | "2g" | "3g" | "4g" | null;
+  downlink: number | null; // Mbps
+  rtt: number | null; // ms
+  saveData: boolean | null;
 };
 
-export function useNetworkInfo() {
-  const [info, setInfo] = useState<NetworkInformation | null>(null);
+export function useNetworkInfo(): NetworkInfo | null {
+  const [info, setInfo] = useState<NetworkInfo | null>(null);
 
   useEffect(() => {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-    if (!connection) return;
+    const nav = navigator as any;
+    const connection =
+      nav.connection || nav.mozConnection || nav.webkitConnection;
+    console.log("connection", connection);
+    if (!connection) {
+      setInfo(null);
+      return;
+    }
 
-    const update = () => setInfo({ ...connection });
+    const getConnectionInfo = (): NetworkInfo => ({
+      effectiveType: connection.effectiveType ?? null,
+      downlink: connection.downlink ?? null,
+      rtt: connection.rtt ?? null,
+      saveData: connection.saveData ?? null,
+    });
+
+    const update = () => {
+      setInfo(getConnectionInfo());
+    };
+
     update();
+
     connection.addEventListener("change", update);
     return () => connection.removeEventListener("change", update);
   }, []);
