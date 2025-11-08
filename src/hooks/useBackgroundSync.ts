@@ -16,6 +16,7 @@ export function useBackgroundSync(tag = "demo-sync") {
     if (!supported) return;
     try {
       const reg = await navigator.serviceWorker.ready;
+      // @ts-ignore
       await reg.sync.register(tag);
       setStatus("queued");
       setTimeout(() => setStatus("synced"), 3000);
