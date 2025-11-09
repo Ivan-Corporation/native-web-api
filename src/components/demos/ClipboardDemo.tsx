@@ -6,6 +6,7 @@ export default function ClipboardDemo() {
   const { copied, copy } = useClipboard();
   const sample = "I am a clipboard sample — no libs used ✨";
 
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
