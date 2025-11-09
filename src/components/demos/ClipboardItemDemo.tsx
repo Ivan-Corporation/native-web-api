@@ -2,7 +2,7 @@ import { useClipboardItem } from "../../hooks/useClipboardItem";
 
 export default function ClipboardItemDemo() {
   const { supported, image, copyImage, pasteImage } = useClipboardItem();
-  const sample = "https://fastly.picsum.photos/id/355/200/200.jpg?hmac=3rHDkz_9bWmvte4NNnIGZon7PIHrM6NQYzXtVY7M_UI";
+  const sample = "https://picsum.photos/seed/xyz/200";
 
   if (!supported)
     return <p className="text-yellow-400">ClipboardItem not supported 😅</p>;
