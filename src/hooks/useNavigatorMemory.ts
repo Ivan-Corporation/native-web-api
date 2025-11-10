@@ -1,68 +1,69 @@
 import { useEffect, useState, useCallback } from "react";
 
-interface NavigatorMemoryInfo {
-  jsHeapSizeLimit: number;
-  totalJSHeapSize: number;
-  usedJSHeapSize: number;
+interface MemoryBreakdown {
+  bytes: number;
+  breakdown: Array<{
+    url: string;
+    bytes: number;
+  }>;
 }
 
-interface MemoryUsage extends NavigatorMemoryInfo {
-  usageRatio: number; // 0 to 1
-  availableJSHeapSize: number;
-  usedMB: string;
+interface MemoryMetrics {
+  totalBytes: number;
+  usedBytes: number;
+  usageRatio: number;
+  breakdown: MemoryBreakdown["breakdown"];
+  timestamp: number;
   totalMB: string;
-  limitMB: string;
+  usedMB: string;
 }
 
-export function useNavigatorMemory(intervalMs = 2000) {
-  const [memory, setMemory] = useState<MemoryUsage | null>(null);
+export function useNavigatorMemory(intervalMs = 3000) {
+  const [metrics, setMetrics] = useState<MemoryMetrics | null>(null);
   const [supported, setSupported] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const readMemory = useCallback(() => {
-    if (!("memory" in performance)) return null;
-
-    const mem = (performance as any).memory as NavigatorMemoryInfo;
-
-    const safeValue = (val: number) => (typeof val === "number" && !isNaN(val) ? val : 0);
-
-    const usedJSHeapSize = safeValue(mem.usedJSHeapSize);
-    const totalJSHeapSize = safeValue(mem.totalJSHeapSize);
-    const jsHeapSizeLimit = safeValue(mem.jsHeapSizeLimit);
-
-    const usageRatio = totalJSHeapSize > 0 ? usedJSHeapSize / totalJSHeapSize : 0;
-    const availableJSHeapSize = totalJSHeapSize - usedJSHeapSize;
-
-    const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
-
-    return {
-      jsHeapSizeLimit,
-      totalJSHeapSize,
-      usedJSHeapSize,
-      usageRatio,
-      availableJSHeapSize,
-      usedMB: toMB(usedJSHeapSize),
-      totalMB: toMB(totalJSHeapSize),
-      limitMB: toMB(jsHeapSizeLimit),
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!("memory" in performance)) {
+  const measureMemory = useCallback(async () => {
+    if (!("measureUserAgentSpecificMemory" in performance)) {
       setSupported(false);
       return;
     }
 
-    setSupported(true);
+    try {
+      setSupported(true);
+      const result = (await (performance as any).measureUserAgentSpecificMemory()) as MemoryBreakdown;
 
-    // Initial read
-    setMemory(readMemory());
+      const totalBytes = result.bytes;
+      const usedBytes = result.breakdown.reduce((sum, item) => sum + item.bytes, 0);
+      const usageRatio = totalBytes > 0 ? usedBytes / totalBytes : 0;
 
-    const interval = setInterval(() => {
-      setMemory(readMemory());
-    }, intervalMs);
+      const toMB = (bytes: number) => (bytes / (1024 * 1024)).toFixed(2);
 
-    return () => clearInterval(interval);
-  }, [intervalMs, readMemory]);
+      setMetrics({
+        totalBytes,
+        usedBytes,
+        usageRatio,
+        breakdown: result.breakdown,
+        timestamp: Date.now(),
+        totalMB: toMB(totalBytes),
+        usedMB: toMB(usedBytes),
+      });
+      setError(null);
+    } catch (err: any) {
+      // Common: Not allowed in this context (e.g. cross-origin iframe)
+      setError(err.message || "Memory measurement failed");
+      console.warn("measureUserAgentSpecificMemory failed:", err);
+    }
+  }, []);
 
-  return { memory, supported };
+  useEffect(() => {
+    measureMemory(); // Initial
+
+    if (intervalMs > 0) {
+      const id = setInterval(measureMemory, intervalMs);
+      return () => clearInterval(id);
+    }
+  }, [intervalMs, measureMemory]);
+
+  return { metrics, supported, error, refresh: measureMemory };
 }
