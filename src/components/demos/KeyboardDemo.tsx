@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 export default function KeyboardDemo() {
   const { key, code } = useKeyboard();
 
+  console.log('key', key)
+  console.log('code', code)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,7 +26,7 @@ export default function KeyboardDemo() {
         transition={{ type: "spring", stiffness: 200, damping: 12 }}
         className="text-5xl font-bold text-fuchsia-400 select-none"
       >
-        {key || "🤔"}
+        {key === " " ? "Space" : key || "🤔"}
       </motion.div>
       <p className="text-sm text-white/50">{code || "No input yet"}</p>
     </motion.div>
