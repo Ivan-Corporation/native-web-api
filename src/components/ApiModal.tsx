@@ -36,12 +36,12 @@ export default function ApiModal({
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", duration: 0.4 }}
             className="relative w-full max-w-2xl mx-4 bg-[#111a2c] rounded-2xl border border-purple-500/30 shadow-[0_0_25px_rgba(124,58,237,0.25)] z-10
-                       flex flex-col max-h-[90vh]"   // <-- height limit
+                       flex flex-col max-h-[90vh]" 
           >
             {/* header */}
             <div className="flex items-center justify-between p-6 pb-0">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <span className="text-purple-400">puzzle piece</span> {title}
+                <span className="text-purple-400">{title}</span> 
               </h2>
               <button
                 onClick={onClose}

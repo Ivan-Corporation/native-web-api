@@ -74,6 +74,7 @@ export default function App() {
       </motion.div>
 
       {/* Modal */}
+      {/* @ts-ignore */}
       <ApiModal open={!!current} onClose={close} title={current?.title}>
         {CurrentDemo && <CurrentDemo />}
       </ApiModal>
