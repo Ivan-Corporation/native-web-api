@@ -6,14 +6,28 @@ export function useGeolocation() {
 
   useEffect(() => {
     if (!("geolocation" in navigator)) {
-      setError("Geolocation not supported 😢");
+      setError("Geolocation not supported");
       return;
     }
 
     const watcher = navigator.geolocation.watchPosition(
-      (pos) => setCoords(pos.coords),
-      (err) => setError(err.message),
-      { enableHighAccuracy: true }
+      (pos) => {
+        setCoords(pos.coords);
+        setError(null);
+      },
+      (err) => {
+        const messages: Record<number, string> = {
+          1: "Permission denied",
+          2: "Position unavailable",
+          3: "Timeout",
+        };
+        setError(messages[err.code] || err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 5000,
+      }
     );
 
     return () => navigator.geolocation.clearWatch(watcher);
