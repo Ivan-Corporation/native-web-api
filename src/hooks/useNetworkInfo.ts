@@ -19,6 +19,8 @@ export function useNetworkInfo(): NetworkInfo | null {
       setInfo(null);
       return;
     }
+    
+    console.log('connection', connection)
 
     const getConnectionInfo = (): NetworkInfo => ({
       effectiveType: connection.effectiveType ?? null,

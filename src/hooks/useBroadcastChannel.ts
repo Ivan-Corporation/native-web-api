@@ -22,3 +22,4 @@ export function useBroadcastChannel(name: string) {
 
   return { messages, sendMessage };
 }
+
